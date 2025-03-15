@@ -3,63 +3,61 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Spiral Around a Sphere</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <title>Band Spiral Visualization</title>
   <style>
     body {
-      margin: 0;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background: white;
+      font-family: Arial, sans-serif;
+      margin: 20px;
     }
-    canvas {
+    .slider-container {
+      margin: 10px 0;
+    }
+    label {
+      display: inline-block;
+      width: 180px;
+    }
+    #canvas {
+      border: 1px solid #ccc;
       display: block;
-    }
-    .controls {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: rgba(255, 255, 255, 0.9);
-      padding: 10px;
-      border-radius: 5px;
-    }
-    input {
-      width: 200px;
-    }
-    button {
-      margin-top: 10px;
-      padding: 10px;
-      border: none;
-      background: black;
-      color: white;
-      cursor: pointer;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <!-- UI Controls -->
-  <div class="controls">
-    <label>Tilt X (Left/Right): <span id="tiltXValue">0</span>°</label><br />
-    <input type="range" id="tiltX" min="-180" max="180" step="1" value="0" /><br /><br />
-
-    <label>Tilt Y (Forward/Backward): <span id="tiltYValue">0</span>°</label><br />
-    <input type="range" id="tiltY" min="-180" max="180" step="1" value="0" /><br /><br />
-
-    <label>Total Degrees: <span id="degreesValue">1440</span>°</label><br />
-    <input type="range" id="degrees" min="0" max="5000" step="10" value="1440" /><br /><br />
-
-    <label>Spiral Rate: <span id="rateValue">.5</span></label><br />
-    <input type="range" id="rate" min="-1" max="1" step="0.05" value="2" /><br /><br />
-
-    <label>Resolution: <span id="resValue">500</span></label><br />
-    <input type="range" id="res" min="100" max="5000" step="50" value="500" /><br /><br />
-
-    <button id="download">Download Image</button>
+  <h1>Band Spiral Visualization</h1>
+  
+  <div class="slider-container">
+    <label for="aSlider">a (MASTER d7):</label>
+    <input type="range" id="aSlider" min="0.2" max="10" step="0.05" value="1.618">
+    <span id="aValue">1.618</span>
   </div>
-
-  <!-- Link to external JavaScript file -->
+  
+  <div class="slider-container">
+    <label for="wrapSizeBandDSlider">wrapSizeBandD (MASTER d13):</label>
+    <input type="range" id="wrapSizeBandDSlider" min="0.5" max="1" step="0.01" value="0.9">
+    <span id="wrapSizeBandDValue">0.9</span>
+  </div>
+  
+  <div class="slider-container">
+    <label for="startAddSlider">startAdd (MASTER d15):</label>
+    <input type="range" id="startAddSlider" min="0" max="45" step="1" value="15">
+    <span id="startAddValue">15</span>
+  </div>
+  
+  <div class="slider-container">
+    <label for="fSlider">f (MASTER f7):</label>
+    <input type="range" id="fSlider" min="0.5" max="3" step="0.05" value="1.05">
+    <span id="fValue">1.05</span>
+  </div>
+  
+  <div class="slider-container">
+    <label for="nSlider">n (MASTER f9):</label>
+    <input type="range" id="nSlider" min="0.2" max="7" step="0.01" value="2">
+    <span id="nValue">.1</span>
+  </div>
+  
+  <canvas id="canvas" width="800" height="600"></canvas>
+  
   <script src="script.js"></script>
 </body>
 </html>

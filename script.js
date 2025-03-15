@@ -1,121 +1,160 @@
-// SETUP THREE.JS SCENE
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(
-  75,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  1000
-);
-const renderer = new THREE.WebGLRenderer({
-  antialias: true,
-  preserveDrawingBuffer: true
-});
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0xffffff); // White background
-document.body.appendChild(renderer.domElement);
+// Get canvas and context
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
 
-// LIGHTING (for smooth visuals)
-const light = new THREE.AmbientLight(0xffffff, 1);
-scene.add(light);
+// Object to hold our slider parameters
+let params = {
+  a: parseFloat(document.getElementById('aSlider').value),               // MASTER d7, a
+  wrapSizeBandD: parseFloat(document.getElementById('wrapSizeBandDSlider').value), // MASTER d13
+  startAdd: parseFloat(document.getElementById('startAddSlider').value),    // MASTER d15
+  f: parseFloat(document.getElementById('fSlider').value),                  // MASTER f7
+  n: parseFloat(document.getElementById('nSlider').value)                   // MASTER f9
+};
 
-// SPIRAL VARIABLES
-let spiralLine;
-function createSpiral(tiltX = 0, tiltY = 0, totalDegrees = 1440, rate = 2, res = 500) {
-  if (spiralLine) scene.remove(spiralLine); // Remove previous spiral
+// Helper function to update slider displays and parameter values
+function setupSlider(sliderId, valueId, paramName) {
+  const slider = document.getElementById(sliderId);
+  const display = document.getElementById(valueId);
+  slider.addEventListener('input', () => {
+    display.textContent = slider.value;
+    params[paramName] = parseFloat(slider.value);
+    draw();
+  });
+}
 
-  const points = [];
-  const tiltXRadians = THREE.MathUtils.degToRad(tiltX);
-  const tiltYRadians = THREE.MathUtils.degToRad(tiltY);
-  const radius = 5; // Spiral radius
+// Initialize sliders
+setupSlider('aSlider', 'aValue', 'a');
+setupSlider('wrapSizeBandDSlider', 'wrapSizeBandDValue', 'wrapSizeBandD');
+setupSlider('startAddSlider', 'startAddValue', 'startAdd');
+setupSlider('fSlider', 'fValue', 'f');
+setupSlider('nSlider', 'nValue', 'n');
 
-  // Generate theta values (North to South Pole)
-  const theta = Array.from({ length: res }, (_, i) => Math.PI / 2 - (i / res) * Math.PI);
+// Utility function to convert degrees to radians
+function toRadians(deg) {
+  return deg * Math.PI / 180;
+}
 
-  // New function to emphasize wrapping near poles
-  function wrapDistribution(t, rate) {
-    const k = Math.pow(t, rate) / (Math.pow(t, rate) + Math.pow(1 - t, rate));
-    //return (1 - k) * 0.75 + k * 0.25; // Adjusts spiral accumulation near poles
-    return (1 - k) * 1 + k * -1; // Adjusts spiral accumulation near poles
+function draw() {
+  // Clear the canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // --- Spreadsheet constants and computed constants ---
+  const dPoints = 1000;            // a2: number of plot points
+  const aVal = params.a;          // slider 'a'
+  const a4 = dPoints / 2;         // a4 = dPoints/2
+  const a10 = Math.PI / dPoints;  // a10 = PI / dPoints
+  const a12 = 1 / aVal;           // a12 = 1 / a
+  const a14 = Math.PI / dPoints;  // a14 = PI / dPoints (same as a10)
+  
+  // f2 is calculated from MASTER B5. With MASTER A2=1, A5=1, B2=30: f2 = 360 + 30 = 390°
+  const f2 = 390;
+  const a16 = toRadians(f2);  // a16 = radians(390)
+  // a18 uses startAdd: a18 = radians(f2 + startAdd)
+  const a18 = toRadians(f2 + params.startAdd);
+  
+  // c10 is calculated from MASTER D9 = sqrt(a^2 - 1) / a (assuming exponent D11 is 2)
+  const c10 = Math.sqrt(aVal * aVal - 1) / aVal;
+  // c13 is the wrapSizeBandD parameter
+  const c13 = params.wrapSizeBandD;
+  
+  // f and n from the sliders (f corresponds to MASTER f7, n to MASTER f9)
+  const fVal = params.f;
+  const nVal = params.n;
+  
+  // --- Prepare arrays to store the points for each line ---
+  let pointsA = [];
+  let pointsB = [];
+  let pointsC = [];
+  let pointsD = [];
+  
+  // s will be our cumulative sum variable (starting at 0)
+  let s = 0;
+  
+  // Loop over each index (0 to dPoints) to compute the necessary values
+  for (let i = 0; i <= dPoints; i++) {
+    // g is the index (i)
+    // h = a10 * i
+    let h = a10 * i;
+    // j = 1 - cos(h)  (exponent is 1 because c2 = 1)
+    let j = 1 - Math.cos(h);
+    // l = a4 * j
+    let l = a4 * j;
+    // m = a10 * l
+    let m = a10 * l;
+    // n_col = sin(m)  -- renamed to avoid conflict with slider n
+    let n_col = Math.sin(m);
+    // o = c10 * cos(m)
+    let o_val = c10 * Math.cos(m);
+    
+    // p = a14 * i
+    let p = a14 * i;
+    // q = nVal * (sin(p))^fVal
+    let sin_p = Math.sin(p);
+    let q = nVal * Math.pow(sin_p, fVal);
+    // r = (if q is zero, then 0; otherwise convert 1/q to radians)
+    let r = (q === 0 ? 0 : (1 / q) * (Math.PI / 180));
+    // Accumulate s
+    s += r;
+    
+    // --- Calculate coordinates for the four curves ---
+    // Line A (columns T & U) uses offset a16
+    let xA = Math.sin(s + a16) * n_col;
+    let yA = (n_col * a12 * Math.cos(s + a16)) + o_val;
+    
+    // Line B (columns V & W): same as A, but multiplied by the wrap factor (c13)
+    let xB = Math.sin(s + a16) * n_col * c13;
+    let yB = (n_col * a12 * c13 * Math.cos(s + a16)) + o_val;
+    
+    // Line C (columns X & Y) uses offset a18
+    let xC = Math.sin(s + a18) * n_col;
+    let yC = (n_col * a12 * Math.cos(s + a18)) + o_val;
+    
+    // Line D (columns Z & AA): same as C, but multiplied by the wrap factor (c13)
+    let xD = Math.sin(s + a18) * n_col * c13;
+    let yD = (n_col * a12 * c13 * Math.cos(s + a18)) + o_val;
+    
+    // Save the computed points
+    pointsA.push({ x: xA, y: yA });
+    pointsB.push({ x: xB, y: yB });
+    pointsC.push({ x: xC, y: yC });
+    pointsD.push({ x: xD, y: yD });
   }
-
-  const adjustedT = theta.map(t => wrapDistribution((t + Math.PI / 2) / Math.PI, rate));
-  const phi = adjustedT.map(t => (totalDegrees / 360) * t * Math.PI * 2);
-
-  // Convert spherical to Cartesian coordinates
-  for (let i = 0; i < res; i++) {
-    let x = radius * Math.cos(phi[i]) * Math.cos(theta[i]);
-    let y = radius * Math.sin(theta[i]);
-    let z = radius * Math.sin(phi[i]) * Math.cos(theta[i]);
-
-    // Apply tilt transformation in both X and Y directions
-    let tempX = x * Math.cos(tiltXRadians) - y * Math.sin(tiltXRadians);
-    let tempY = x * Math.sin(tiltXRadians) + y * Math.cos(tiltXRadians);
-
-    let finalX = tempX * Math.cos(tiltYRadians) - z * Math.sin(tiltYRadians);
-    let finalZ = tempX * Math.sin(tiltYRadians) + z * Math.cos(tiltYRadians);
-
-    points.push(new THREE.Vector3(finalX, tempY, finalZ));
+  
+  // --- Draw the curves on the canvas ---
+  // Define a scale factor and center for the drawing
+  const scale = 200;  // Adjust scale for better visibility
+  const offsetX = canvas.width / 2;
+  const offsetY = canvas.height / 2;
+  
+  // Function to draw a line given an array of points and a stroke color
+  function drawLine(points, color) {
+    ctx.beginPath();
+    for (let i = 0; i < points.length; i++) {
+      // Map the computed (x, y) to canvas coordinates.
+      let screenX = offsetX + points[i].x * scale;
+      let screenY = offsetY - points[i].y * scale; // Invert y-axis for canvas
+      if (i === 0) {
+        ctx.moveTo(screenX, screenY);
+      } else {
+        ctx.lineTo(screenX, screenY);
+      }
+    }
+    ctx.strokeStyle = color;
+    ctx.stroke();
   }
-
-  const curve = new THREE.BufferGeometry().setFromPoints(points);
-  const material = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 5 }); // Black, thick line
-  spiralLine = new THREE.Line(curve, material);
-  scene.add(spiralLine);
+  
+  // Draw each line in a distinct color
+  drawLine(pointsA, 'red');    // Line A
+  drawLine(pointsB, 'green');  // Line B
+  drawLine(pointsC, 'blue');   // Line C
+  drawLine(pointsD, 'orange'); // Line D
+  
+  // Optionally, display current parameter values on the canvas
+  ctx.font = '16px Arial';
+  ctx.fillStyle = 'black';
+  const text = `a: ${aVal.toFixed(3)}, wrapSizeBandD: ${c13.toFixed(3)}, startAdd: ${params.startAdd}, f: ${fVal.toFixed(3)}, n: ${nVal.toFixed(3)}`;
+  ctx.fillText(text, 10, 20);
 }
 
-// CAMERA POSITION
-camera.position.z = 15;
-
-// ANIMATION LOOP
-function animate() {
-  requestAnimationFrame(animate);
-  renderer.render(scene, camera);
-}
-animate();
-
-// EVENT LISTENERS FOR SLIDERS
-document.getElementById("tiltX").addEventListener("input", (e) => {
-  document.getElementById("tiltXValue").textContent = e.target.value;
-  updateSpiral();
-});
-
-document.getElementById("tiltY").addEventListener("input", (e) => {
-  document.getElementById("tiltYValue").textContent = e.target.value;
-  updateSpiral();
-});
-
-document.getElementById("degrees").addEventListener("input", (e) => {
-  document.getElementById("degreesValue").textContent = e.target.value;
-  updateSpiral();
-});
-
-document.getElementById("rate").addEventListener("input", (e) => {
-  document.getElementById("rateValue").textContent = e.target.value;
-  updateSpiral();
-});
-
-document.getElementById("res").addEventListener("input", (e) => {
-  document.getElementById("resValue").textContent = e.target.value;
-  updateSpiral();
-});
-
-function updateSpiral() {
-  createSpiral(
-    parseFloat(document.getElementById("tiltX").value),
-    parseFloat(document.getElementById("tiltY").value),
-    parseFloat(document.getElementById("degrees").value),
-    parseFloat(document.getElementById("rate").value),
-    parseInt(document.getElementById("res").value)
-  );
-}
-
-// INITIAL SPIRAL CREATION
-createSpiral();
-
-// DOWNLOAD FUNCTION
-document.getElementById("download").addEventListener("click", () => {
-  const link = document.createElement("a");
-  link.href = renderer.domElement.toDataURL("image/png");
-  link.download = "spiral.png";
-  link.click();
-});
+// Initial drawing
+draw();

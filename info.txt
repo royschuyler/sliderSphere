@@ -1,0 +1,140 @@
+I have an excel spreadsheet system that creates plots that depict a band that spirals around a sphere. I want to translate the formulas from excel into a script.js file and have an index.html file with slider bar variables. I will explain which variables I want in as sliders on the screen. i want to use a canvas tag to plot the band spiral. The band spiral consists of 4 lines that, when plotted together, appear to be a 3-d band spiraling around a sphere. The 4 lines are named A,B,C & D. A & C are the same, just with a different starting value. B & D are the same, just with a different starting value. Ax plots are in column T. Ay plots are in column U. Bx plots are in column V. By plots are in column W. Cx plots are in column X. Cy plots are in column Y. Dx plots are in column Z. Dy plots are in column AA. 
+
+
+Here are the formulas for the system in the spreadsheet.
+
+MASTER a2=1
+MASTER a5=1
+MASTER a6=2
+MASTER a7=3
+MASTER a8=4
+MASTER a9=5
+MASTER a10=6
+MASTER a11=7
+MASTER b2=30
+MASTER b5=((360/$A$2)*A5)+$B$2
+MASTER b6=((360/$A$2)*A6)+$B$2
+MASTER b7=((360/$A$2)*A7)+$B$2
+MASTER b8=((360/$A$2)*A8)+$B$2
+MASTER b9=((360/$A$2)*A9)+$B$2
+MASTER b10=((360/$A$2)*A10)+$B$2
+MASTER b11=((360/$A$2)*A11)+$B$2
+MASTER d4=1
+MASTER d7=1.6 --var name is a
+MASTER d9=SQRT(D7^D11-1)/D7 --var name is key
+MASTER d13=0.9 --var name is wrapSizeBandD
+MASTER d15=15 --var name is startSize
+MASTER f7=1.1 --var name is f
+MASTER f9=1.5 --var name is n
+
+a2=100 --var name is d. This indicates how many plots per line we can start with 100, but I may want it to be 1,000.
+a4=A2/2
+a6=180
+a8=RADIANS(A6)
+a10=A8/A2
+a12=1/C7
+a14=RADIANS(180)/A2
+a16=RADIANS(F2)
+a18=RADIANS(F2+F4)
+
+c2=MASTER!D4
+c7=MASTER!D7
+c10=MASTER!D9
+c13=MASTER!D13
+
+d7=MASTER!F7
+d10=MASTER!F9
+
+f2=MASTER!B5
+f4=MASTER!D15
+
+g10=0
+g11=1
+g12=2
+{continues this pattern 0-100 where g110=100}
+
+h10==$A$10*G10
+h11=$A$10*G11
+{continues this pattern 0-100 where h110==$A$10*G110}
+
+i10=(SIN(H10))^$C$2
+i11=(SIN(H11))^$C$2
+{continues this pattern 0-100 where i110=(SIN(H110))^$C$2}
+
+j10=1-(COS(H10))^$C$2
+j11=1-(COS(H11))^$C$2
+{continues this pattern 0-100 where j110=1-(COS(H110))^$C$2}
+
+k10=J10
+k11=J11
+{continues this pattern 0-100 where k110=j110}
+
+l10=$A$4*K10
+l11=$A$4*K11
+{continues this pattern 0-100 where l110=$A$4*K110}
+
+m10=$A$10*L10
+m11==$A$10*L11
+{continues this pattern 0-100 where l110=$A$4*l110}
+
+n10=SIN(M10)
+n11=SIN(M11)
+{continues this pattern 0-100 where n110=SIN(M110)}
+
+o10=$C$10*COS(M10)
+o11=$C$10*COS(M11)
+{continues this pattern 0-100 where o110=$C$10*COS(M110)}
+
+p10=$A$14*G10
+p11=$A$14*G11
+{continues this pattern 0-100 where p110=$A$14*G110}
+
+q10=$D$10*(SIN(P10))^$D$7
+q11=$D$10*(SIN(P11))^$D$7
+{continues this pattern 0-100 where q110=$D$10*(SIN(P110))^$D$7}
+
+r10=Q10 --or 0, because you can't divide by 0
+r11=RADIANS(1/Q11)
+r12=RADIANS(1/Q12)
+r13=RADIANS(1/Q13)
+{continues this pattern 0-100 where r110=RADIANS(1/Q110)}
+
+s10=R10
+s11=S10+R11
+s12=S11+R12
+s13=S12+R13
+{continues this pattern 0-100 where s110==S109+R110}
+
+t10=SIN(S10+$A$16)*N10
+t11=SIN(S11+$A$16)*N11
+{continues this pattern 0-100 where t110=SIN(S110+$A$16)*N110}
+
+u10=(N10*$A$12*COS(S10+$A$16))+O10
+u11=(N11*$A$12*COS(S11+$A$16))+O11
+{continues this pattern 0-100 where u110=(N110*$A$12*COS(S110+$A$16))+O110}
+
+v10=SIN(S10+$A$16)*N10*$C$13
+v11=SIN(S11+$A$16)*N11*$C$13
+{continues this pattern 0-100 where v110=SIN(S110+$A$16)*N110*$C$13}
+
+w10=(N10*$A$12*$C$13*COS(S10+$A$16))+O10
+w11=(N11*$A$12*$C$13*COS(S11+$A$16))+O11
+{continues this pattern 0-100 where w110=(N110*$A$12*$C$13*COS(S110+$A$16))+O110}
+
+x10=SIN(S10+$A$18)*N10
+x11=SIN(S11+$A$18)*N11
+{continues this pattern 0-100 where x110=SIN(S110+$A$18)*N110}
+
+y10=(N10*$A$12*COS(S10+$A$18))+O10
+y11=(N11*$A$12*COS(S11+$A$18))+O11
+{continues this pattern 0-100 where y110=(N110*$A$12*COS(S110+$A$18))+O110}
+
+z10=SIN(S10+$A$18)*N10*$C$13
+z11=SIN(S11+$A$18)*N11*$C$13
+{continues this pattern 0-100 where z110=SIN(S110+$A$18)*N110*$C$13}
+
+aa10=(N10*$A$12*$C$13*COS(S10+$A$18))+O10
+aa11=(N11*$A$12*$C$13*COS(S11+$A$18))+O11
+{continues this pattern 0-100 where aa110=(N110*$A$12*$C$13*COS(S110+$A$18))+O110
+
+
