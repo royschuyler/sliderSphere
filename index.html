@@ -14,7 +14,7 @@
     }
     label {
       display: inline-block;
-      width: 180px;
+      width: 220px;
     }
     #canvas {
       border: 1px solid #ccc;
@@ -28,7 +28,7 @@
   
   <div class="slider-container">
     <label for="aSlider">a (MASTER d7):</label>
-    <input type="range" id="aSlider" min="0.2" max="10" step="0.05" value="1.618">
+    <input type="range" id="aSlider" min="1" max="3" step="0.1" value="1.618">
     <span id="aValue">1.618</span>
   </div>
   
@@ -46,7 +46,7 @@
   
   <div class="slider-container">
     <label for="fSlider">f (MASTER f7):</label>
-    <input type="range" id="fSlider" min="0.5" max="3" step="0.05" value="1.05">
+    <input type="range" id="fSlider" min=".2" max="2" step="0.05" value="1.05">
     <span id="fValue">1.05</span>
   </div>
   
@@ -54,6 +54,20 @@
     <label for="nSlider">n (MASTER f9):</label>
     <input type="range" id="nSlider" min="0.2" max="7" step="0.01" value="2">
     <span id="nValue">.1</span>
+  </div>
+  
+  <!-- New slider for Total Start Value -->
+  <div class="slider-container">
+    <label for="totalStartSlider">Total Start Value (degrees):</label>
+    <input type="range" id="totalStartSlider" min="-180" max="180" step="1" value="0">
+    <span id="totalStartValue">0</span>
+  </div>
+  
+  <!-- New slider for Tilt -->
+  <div class="slider-container">
+    <label for="tiltSlider">Tilt (degrees):</label>
+    <input type="range" id="tiltSlider" min="-45" max="45" step="1" value="0">
+    <span id="tiltValue">0</span>
   </div>
   
   <canvas id="canvas" width="800" height="600"></canvas>

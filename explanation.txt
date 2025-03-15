@@ -1,0 +1,14 @@
+My concept of plotting a sphere and lines that spiral around a sphere:
+
+var a = {a number}; that would be the x value of an ellipse that touches the circle border of the sphere at the midpoints of the x-axis.
+
+var e = 1/a; 
+
+f = {a number}; This dictates how closely the ellipses are plotted near the poles. The higher the number f, the closer to the poles more ellipses will be plotted.
+
+var key = SQRT((a^f)-1)/a; This is a sphere key variable. When plotting an ellipse with center (0,0), and plotting the top right quadrant and bottom right quadrant, the x values of each plot, is the size of the x value of the ellipses to plot with the a value = 1 and the y value = e. 
+
+var n = {a number};
+
+Then I 
+
